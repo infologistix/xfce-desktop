@@ -1,0 +1,36 @@
+# xfce-desktop.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xfce-desktop
+  namespace: desktop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xfce-desktop
+  template:
+    metadata:
+      labels:
+        app: xfce-desktop
+      annotations:
+        sidecar.istio.io/inject: "false"  # Disable Istio if not needed
+    spec:
+      containers:
+      - name: xfce
+        image: europe-west3-docker.pkg.dev/platform-app-ilx/docker-image-repository/xfce-chromium:latest
+        volumeMounts:
+        - name: vnc-password
+          mountPath: /etc/vnc-secret
+          readOnly: true
+        - name: user-data
+          mountPath: /home/user/developer
+        ports:
+        - containerPort: 5901
+      volumes:
+      - name: vnc-password
+        secret:
+          secretName: vnc-secret
+      - name: user-data
+        persistentVolumeClaim:
+          claimName: xfce-pvc

@@ -1,0 +1,14 @@
+# xfce-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: xfce-vnc
+  namespace: desktop
+spec:
+  selector:
+    app: xfce-desktop
+  ports:
+    - protocol: TCP
+      port: 5901
+      targetPort: 5901
+  type: NodePort

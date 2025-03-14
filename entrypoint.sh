@@ -44,11 +44,32 @@ sudo -u developer chromium-browser --no-sandbox --disable-dev-shm-usage &
 # Wait for X server
 while [ ! -e /tmp/.X11-unix/X1 ]; do sleep 0.5; done
 
-# Disable compositing
-sudo -u $USERNAME xfconf-query -c xfwm4 -p /general/use_compositing -s false
+# Set up Chromium environment
+export XAUTHORITY=/tmp/.Xauthority
+touch $XAUTHORITY
+chown $USERNAME:$USERNAME $XAUTHORITY
+
+
+
+# Disable compositing FIRST
+sudo -u $USERNAME xfconf-query -c xfwm4 -p /general/use_compositing -s false --create
+
+
 
 # Start XFCE and VNC
 sudo -u $USERNAME xfce4-session &
+
+# Start Chromium with proper environment
+sudo -u $USERNAME chromium-browser \
+  --no-sandbox \
+  --disable-dev-shm-usage \
+  --disable-gpu \
+  --no-first-run \
+  --window-size=1280,720 \
+  --window-position=0,0 \
+  > /tmp/chromium.log 2>&1 &
+
+
 x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -localhost -noxdamage &
 
 # Keep container alive

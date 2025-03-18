@@ -18,7 +18,7 @@ chown -R $USERNAME:$USERNAME /home/$USERNAME/.vnc
 chmod 700 /home/$USERNAME/.vnc
 
 # Passwortdatei erstellen
-echo -n "changeme" | vncpasswd -f > /home/$USERNAME/.vnc/passwd
+echo -n "$VNC_PASSWORD" > /home/$USERNAME/.vnc/password
 chown $USERNAME:$USERNAME /home/$USERNAME/.vnc/passwd
 chmod 600 /home/$USERNAME/.vnc/passwd
 

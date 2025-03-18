@@ -19,7 +19,7 @@ spec:
       containers:
       - name: xfce
         image: europe-west3-docker.pkg.dev/platform-app-ilx/docker-image-repository/xfce-chromium:latest
-        command: ["/bin/sh", "-c"]
+        # command: ["/bin/sh", "-c"]
         volumeMounts:
         - name: vnc-password
           mountPath: /etc/vnc-secret

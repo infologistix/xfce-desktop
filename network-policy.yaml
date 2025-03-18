@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-guacamole-vnc
+  namespace: xfce-desktop
+spec:
+  podSelector:
+    matchLabels:
+      app: xfce-desktop
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: guacamole
+      ports:
+        - protocol: TCP
+          port: 5901  # Allow port 5901

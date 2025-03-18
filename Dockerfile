@@ -4,8 +4,8 @@ FROM ubuntu:22.04 AS builder
 ENV USERNAME=developer
 
 # Install required tools
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt update && \
+    DEBIAN_FRONTEND=noninteractive apt install -y \
     software-properties-common \
     wget \
     gnupg \
@@ -24,14 +24,25 @@ FROM ubuntu:22.04
 COPY --from=builder /etc/apt/sources.list.d /etc/apt/sources.list.d
 COPY --from=builder /etc/apt/trusted.gpg.d /etc/apt/trusted.gpg.d
 
+
+# Umgebung vorbereiten & Updates
+RUN apt update && apt upgrade -y
+
+# Chromium installieren (ohne Snap)
+RUN apt install -y chromium-browser
+
 # Install packages
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt update && \
+    DEBIAN_FRONTEND=noninteractive apt install -y \
     sudo \
     xfce4 xfce4-terminal xfce4-goodies x11vnc xvfb \
     curl libx11-6 libxkbfile1 libsecret-1-0 \
     tigervnc-standalone-server \
     chromium-browser \
+    libgl1-mesa-dri \
+    libgl1-mesa-glx \
+    fonts-liberation \
+    fonts-noto-core \
     libnss3 \
     libxss1 \
     libasound2 \
@@ -43,6 +54,9 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Create symbolic link to bypass Snap check
+RUN ln -s /usr/bin/chromium-browser /usr/bin/chromium
+
 # Python configuration
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
@@ -51,12 +65,6 @@ RUN useradd -m -u 1000 -s /bin/bash developer \
     && mkdir -p /etc/sudoers.d \
     && echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer \
     && chmod 440 /etc/sudoers.d/developer
-
-
-# VNC setup
-RUN mkdir -p /home/${USERNAME}/.vnc \
-    && echo "changeme" | vncpasswd -f > /home/${USERNAME}/.vnc/passwd \
-    && chmod 600 /home/${USERNAME}/.vnc/passwd
 
 
 COPY entrypoint.sh /home/developer/entrypoint.sh

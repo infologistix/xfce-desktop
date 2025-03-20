@@ -1,11 +1,16 @@
 #!/bin/bash
 
 # Initialize D-Bus
-mkdir -p /var/run/dbus
-chown root:messagebus /var/run/dbus
-dbus-uuidgen --ensure
-dbus-daemon --system --fork
-export $(dbus-launch)
+# mkdir -p /var/run/dbus
+#chown root:messagebus /var/run/dbus
+#dbus-uuidgen --ensure
+#dbus-daemon --system --fork
+#export $(dbus-launch)
+
+# User-mode D-Bus setup
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-session
+mkdir -p /tmp/dbus-session
+dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --fork
 
 
 # Set up VNC password
@@ -35,7 +40,7 @@ echo "developer:changeme" | chpasswd
 
 # Start Xvfb and wait for it
 export DISPLAY=:1
-Xvfb :1 -screen 0 1280x720x16 &
+Xvfb :1 -screen 0 1280x720x16 & -ac +extension GLX +render -noreset &
 
 # Chromium prep
 chown developer:developer /home/developer
@@ -74,7 +79,7 @@ sudo -u $USERNAME chromium-browser \
   > /tmp/chromium.log 2>&1 &
 
 
-x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -localhost no -noxdamage &
+x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -noxdamage &
 
 # Keep container alive
 tail -f /dev/null

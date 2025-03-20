@@ -32,14 +32,14 @@ spec:
           capabilities:
             add: ["SYS_RESOURCE",  "SYS_ADMIN"]  # Allow OOM score adjustments
           privileged: false
-        image: kasmweb/ubuntu-xfce:1.14.0  # Tested image
+        # image: kasmweb/ubuntu-xfce:1.14.0  # Tested image
         env:
           - name: VNC_PW
             valueFrom:
               secretKeyRef:
                 name: vnc-secret
                 key: password
-        # image: europe-west3-docker.pkg.dev/platform-app-ilx/docker-image-repository/xfce-chromium:latest
+        image: europe-west3-docker.pkg.dev/platform-app-ilx/docker-image-repository/xfce-chromium:latest
         # command: ["/bin/sh", "-c"]
         volumeMounts:
         - name: vnc-password

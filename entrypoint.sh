@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Initialize D-Bus
-# mkdir -p /var/run/dbus
-#chown root:messagebus /var/run/dbus
-#dbus-uuidgen --ensure
-#dbus-daemon --system --fork
-#export $(dbus-launch)
+mkdir -p /var/run/dbus
+chown root:messagebus /var/run/dbus
+dbus-uuidgen --ensure
+dbus-daemon --system --fork
+export $(dbus-launch)
 
 # User-mode D-Bus setup
-export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-session
+##export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-session
 mkdir -p /tmp/dbus-session
-dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --fork
+#dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --fork
 
 
 # Set up VNC password

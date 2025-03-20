@@ -50,6 +50,7 @@ RUN apt update && \
     libgtk-3-0 \
     fonts-liberation \
     xterm \
+    pm-utils \
     python3 python3-pip vim \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

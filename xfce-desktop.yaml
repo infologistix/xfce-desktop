@@ -24,8 +24,8 @@ spec:
       - name: xfce
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "250m"
+            memory: "1Gi"
+            cpu: "500m"
           limits:
             memory: "2Gi"
             cpu: "1"
@@ -47,7 +47,7 @@ spec:
           mountPath: /etc/vnc-secret
           readOnly: true
         - name: user-data
-          mountPath: /home/user/developer
+          mountPath: /home/developer
         ports:
         - containerPort: 5901
       volumes:

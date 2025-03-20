@@ -40,15 +40,12 @@ echo "developer:changeme" | chpasswd
 
 # Start Xvfb and wait for it
 export DISPLAY=:1
-Xvfb :1 -screen 0 1280x720x16 & -ac +extension GLX +render -noreset &
+Xvfb :1 -screen 0 1280x720x16 -ac +extension GLX +render -noreset &
 
 # Chromium prep
 chown developer:developer /home/developer
 mkdir -p /home/developer/.config/chromium
 chown -R developer:developer /home/developer/.config
-
-# Start Chromium automatically (optional)
-sudo -u developer chromium-browser --no-sandbox --disable-dev-shm-usage &
 
 # Wait for X server
 while [ ! -e /tmp/.X11-unix/X1 ]; do sleep 0.5; done
@@ -79,7 +76,7 @@ sudo -u $USERNAME chromium-browser \
   > /tmp/chromium.log 2>&1 &
 
 
-x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -noxdamage &
+x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -noxdamage -listen 0.0.0.0 &
 
 # Keep container alive
 tail -f /dev/null

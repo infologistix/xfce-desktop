@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: xfce-desktop
-  namespace: desktop
+  namespace: xfce-desktop
 spec:
   replicas: 1
   selector:

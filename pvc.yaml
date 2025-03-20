@@ -3,7 +3,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: xfce-pvc
-  namespace: desktop
+  namespace: xfce-desktop
 spec:
   accessModes:
     - ReadWriteOnce

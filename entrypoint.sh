@@ -18,9 +18,13 @@ chown -R $USERNAME:$USERNAME /home/$USERNAME/.vnc
 chmod 700 /home/$USERNAME/.vnc
 
 # Passwortdatei erstellen
-echo -n "changeme" | vncpasswd -f > /home/$USERNAME/.vnc/passwd
+echo -n "$VNC_PASSWORD" | vncpasswd -f > /home/$USERNAME/.vnc/passwd
 chown $USERNAME:$USERNAME /home/$USERNAME/.vnc/passwd
 chmod 600 /home/$USERNAME/.vnc/passwd
+
+# UNIX-Passwort für developer setzen
+
+echo "developer:changeme" | chpasswd
 
 
 # Install Python packages
@@ -70,7 +74,7 @@ sudo -u $USERNAME chromium-browser \
   > /tmp/chromium.log 2>&1 &
 
 
-x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -localhost -noxdamage &
+x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -localhost no -noxdamage &
 
 # Keep container alive
 tail -f /dev/null

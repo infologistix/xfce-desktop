@@ -16,8 +16,21 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"  # Disable Istio if not needed
     spec:
+      securityContext:  # Add pod-level security context
+        runAsUser: 1000  # Use a non-root user (adjust to match your image)
+        runAsGroup: 1000
       containers:
       - name: xfce
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        securityContext:
+          capabilities:
+            add: ["SYS_RESOURCE"]  # Allow OOM score adjustments
         image: europe-west3-docker.pkg.dev/platform-app-ilx/docker-image-repository/xfce-chromium:latest
         # command: ["/bin/sh", "-c"]
         volumeMounts:

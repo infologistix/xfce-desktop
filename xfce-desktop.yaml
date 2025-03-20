@@ -16,10 +16,10 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"  # Disable Istio if not needed
     spec:
-      securityContext:  # Add pod-level security context
-        runAsUser: 1000  # Use a non-root user (adjust to match your image)
-        runAsGroup: 1000
-        fsGroup: 1000 
+      #securityContext:  # Add pod-level security context
+      #  runAsUser: 1000  # Use a non-root user (adjust to match your image)
+      #  runAsGroup: 1000
+      # fsGroup: 1000 
       containers:
       - name: xfce
         resources:

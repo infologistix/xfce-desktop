@@ -6,6 +6,8 @@ metadata:
   namespace: xfce-desktop
 spec:
   replicas: 1
+  strategy:
+    type: Recreate  # Terminate old pods before starting new ones
   selector:
     matchLabels:
       app: xfce-desktop

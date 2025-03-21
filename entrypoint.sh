@@ -83,7 +83,7 @@ sudo -u developer chromium-browser \
 # Warte, bis Chromium läuft
 sleep 5
 
-x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -localhost no -noxdamage &
+x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -listen 0.0.0.0 -noxdamage &
 
 # Keep container alive
 tail -f /dev/null

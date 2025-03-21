@@ -46,8 +46,8 @@ spec:
         - name: vnc-password
           mountPath: /etc/vnc-secret
           readOnly: true
-        #- name: user-data
-        #  mountPath: /home/developer/data
+        - name: user-data
+          mountPath: /home/developer
         ports:
         - containerPort: 5901
       volumes:

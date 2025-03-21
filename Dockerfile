@@ -67,8 +67,8 @@ RUN useradd -m -u 1000 -s /bin/bash developer \
     && chmod 440 /etc/sudoers.d/developer
 
 
-COPY entrypoint.sh /home/developer/entrypoint.sh
-RUN chmod +x /home/developer/entrypoint.sh
+COPY entrypoint.sh /home/entrypoint.sh
+RUN chmod +x /home/entrypoint.sh
 
 # Set up environment
 WORKDIR /home/developer
@@ -78,4 +78,4 @@ EXPOSE 5901
 
 # Set user and entrypoint
 # USER user
-ENTRYPOINT ["/home/developer/entrypoint.sh"]
+ENTRYPOINT ["/home/entrypoint.sh"]

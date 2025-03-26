@@ -1,5 +1,5 @@
 # Stage 1: Builder
-FROM gwq-vpgitlab01.gwq-serviceplus.de:5005/base/base:latest AS builder
+FROM ubuntu:24.04 AS builder
 
 ENV USERNAME=developer
 
@@ -16,7 +16,7 @@ RUN apt update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Stage 2: Runtime
-FROM gwq-vpgitlab01.gwq-serviceplus.de:5005/base/base:latest 
+FROM ubuntu:24.04
 
 # Copy repository configuration from builder
 COPY --from=builder /etc/apt/sources.list.d /etc/apt/sources.list.d
@@ -35,6 +35,11 @@ RUN apt update && \
     git \
     wget \
     gpg \
+    libnss3 \
+    libxss1 \
+    libgtk-3-0 \
+    dbus-x11 \
+    dbus-user-session \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -73,14 +78,9 @@ RUN set -ex; \
     echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
     chmod 440 /etc/sudoers.d/developer
 
-# VS Code configuration
-RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg && \
-    install -o root -g root -m 644 packages.microsoft.gpg /usr/share/keyrings/ && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y code && \
-    rm -f packages.microsoft.gpg && \
-    ln -s /usr/share/code/bin/code /usr/local/bin/code
+# Set permissions for developer user
+RUN mkdir -p /home/developer/.vscode /home/developer/.config && \
+    chown -R developer:developer /home/developer
 
 # VS Code configuration
 USER developer
@@ -88,14 +88,28 @@ WORKDIR /home/developer
 RUN code --install-extension ms-python.python --force && \
     code --install-extension eamodio.gitlens --force && \
     echo "export ELECTRON_DISABLE_SANDBOX=1" >> ~/.bashrc && \
-    echo "export PATH=\$PATH:/usr/share/code/bin" >> ~/.bashrc
+    echo "export PATH=\$PATH:/usr/share/code/bin" >> ~/.bashrc && \
+    #echo "export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus" >> ~/.bashrc && \
+    echo "export DISPLAY=:1" >> ~/.bashrc && \
+    echo "export TMPDIR=/home/developer/tmp" >> ~/.bashrc && \
+    echo "alias code='code --disable-gpu --disable-software-rasterizer'" >> ~/.bashrc
 
+# Xvfb und D-Bus vorbereiten
+RUN mkdir -p /tmp/.X11-unix /tmp/.dbus /tmp/.xdg-runtime /tmp/runtime-developer && \
+    chmod 1777 /tmp/.X11-unix /tmp/.dbus /tmp/.xdg-runtime /tmp/runtime-developer && \
+    chown -R developer:developer /tmp/.X11-unix /tmp/.dbus /tmp/.xdg-runtime /tmp/runtime-developer
+
+# Standardwerte für X11 & D-Bus setzen
+ENV DISPLAY=:1
+ENV XDG_RUNTIME_DIR=/tmp/runtime-developer
+
+# Hier noch was machen, da root
 COPY entrypoint.sh /home/entrypoint.sh
 USER root
 RUN chmod +x /home/entrypoint.sh
-
+USER developer
 EXPOSE 5901
 ENTRYPOINT ["/home/entrypoint.sh"] 
-WORKDIR /app
+
 
 

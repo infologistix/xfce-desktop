@@ -85,5 +85,7 @@ sleep 5
 
 x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -listen 0.0.0.0 -noxdamage &
 
+sudo -u $USERNAME bash -c "source /home/$USERNAME/.bashrc && code --disable-gpu --disable-software-rasterizer --no-sandbox >/tmp/vscode.log 2>&1 &"
+
 # Keep container alive
 tail -f /dev/null

@@ -16,4 +16,4 @@ spec:
               kubernetes.io/metadata.name: guacamole
       ports:
         - protocol: TCP
-          port: 5901  # Allow port 5901
+          port: 5901 

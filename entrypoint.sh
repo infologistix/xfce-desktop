@@ -1,91 +1,46 @@
 #!/bin/bash
 
-# Initialize D-Bus
-mkdir -p /var/run/dbus
-chown root:messagebus /var/run/dbus
-dbus-uuidgen --ensure
-dbus-daemon --system --fork
-export $(dbus-launch)
-
-# User-mode D-Bus setup
-export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-session
-mkdir -p /tmp/dbus-session
-dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --fork
-
-# Set up VNC password
-USERNAME=developer
-VNC_PASSWORD=$(cat /etc/vnc-secret/password)
-
-# .vnc-Verzeichnis erstellen
-mkdir -p /home/$USERNAME/.vnc
-chown -R $USERNAME:$USERNAME /home/$USERNAME/.vnc
-chmod 700 /home/$USERNAME/.vnc
-
-# Passwortdatei erstellen
-echo -n "$VNC_PASSWORD" | vncpasswd -f > /home/$USERNAME/.vnc/passwd
-chown $USERNAME:$USERNAME /home/$USERNAME/.vnc/passwd
-chmod 600 /home/$USERNAME/.vnc/passwd
-
-# UNIX-Passwort für developer setzen
-echo "developer:changeme" | chpasswd
-
-# Install Python packages
-# sudo -u $USERNAME pip3 install --user -r /home/$USERNAME/requirements.txt || { echo "Python package installation failed"; exit 1; }
-
-# Start code-server
-#sudo -u $USERNAME code-server --bind-addr 0.0.0.0:8080 --auth none &
-
-# Start Xvfb and wait for it
+# Set runtime environment
 export DISPLAY=:1
-Xvfb :1 -screen 0 1280x720x16 &
+export XDG_RUNTIME_DIR=/tmp/runtime-developer
+export XAUTHORITY=/home/developer/.Xauthority  # Ensure correct XAuthority file
 
-# Warte, bis Xvfb läuft
+# Start virtual frameb uffer (Xvfb) in the background
+Xvfb :1 -screen 0 1920x1080x24 &
+
+# Wait for Xvfb to initialize
 sleep 2
-while ! xdpyinfo -display :1 >/dev/null 2>&1; do
-    echo "Waiting for X server..."
-    sleep 1
-done
 
-# Chromium prep
-chown developer:developer /home/developer
-mkdir -p /home/developer/.config/chromium
-chown -R developer:developer /home/developer/.config
+# Create a new Xauthority cookie for the developer user
+xauth add $DISPLAY . $(mcookie)
 
-# Wait for X server
-while [ ! -e /tmp/.X11-unix/X1 ]; do sleep 0.5; done
+# Ensure that the .vnc directory and password file exist and have correct permissions
+mkdir -p /home/developer/.vnc
+x11vnc -storepasswd mypassword /home/developer/.vnc/passwd
+chown developer:developer /home/developer/.vnc/passwd
+chmod 600 /home/developer/.vnc/passwd
 
-# Set up Chromium environment
+# ✅ Install VSCodium extensions at runtime (if not already installed)
+EXTDIR=/opt/vscodium-extensions
+if [ -d "$EXTDIR" ]; then
+  for vsix in "$EXTDIR"/*.vsix; do
+    if [ -f "$vsix" ]; then
+      ext_id=$(basename "$vsix" .vsix)
+      if ! codium --list-extensions | grep -q "$ext_id"; then
+        echo "🔧 Installing extension: $vsix"
+        codium --no-sandbox --user-data-dir="$HOME/.vscode-oss" --install-extension "$vsix"
+      else
+        echo "✅ Already installed: $ext_id"
+      fi
+    fi
+  done
+fi
 
-# Set up Chromium environment
-export XAUTHORITY=/tmp/.Xauthority
-touch $XAUTHORITY
-chown $USERNAME:$USERNAME $XAUTHORITY
+# Start XFCE session as the current user
+startxfce4 &
 
-# Disable compositing FIRST
-sudo -u $USERNAME xfconf-query -c xfwm4 -p /general/use_compositing -s false --create
+# Start VNC server with password protection
+x11vnc -usepw -display :1 -forever -shared -rfbport 5901 -listen 0.0.0.0 -auth $XAUTHORITY &
 
-# Start XFCE and VNC
-sudo -u $USERNAME xfce4-session &
-
-# Start Chromium mit optimierten Flags
-sudo -u developer chromium-browser \
-  --no-sandbox \
-  --disable-dev-shm-usage \
-  --disable-gpu \
-  --single-process \
-  --disable-background-mode \
-  --disable-software-rasterizer \
-  --no-first-run \
-  --window-size=1280,720 \
-  --window-position=0,0 \
-  > /tmp/chromium.log 2>&1 &
-
-# Warte, bis Chromium läuft
-sleep 5
-
-x11vnc -display :1 -forever -shared -rfbauth "/home/${USERNAME}/.vnc/passwd" -rfbport 5901 -listen 0.0.0.0 -noxdamage &
-
-sudo -u $USERNAME bash -c "source /home/$USERNAME/.bashrc && code --disable-gpu --disable-software-rasterizer --no-sandbox >/tmp/vscode.log 2>&1 &"
-
-# Keep container alive
+# Keep the container alive
 tail -f /dev/null

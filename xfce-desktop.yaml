@@ -29,8 +29,8 @@ spec:
             memory: "1Gi"
             cpu: "500m"
           limits:
-            memory: "3Gi"
-            cpu: "2"
+            memory: "1.5Gi"
+            cpu: "750m"
         #securityContext:
         #  capabilities:
         #    add: ["SYS_RESOURCE"]  # Allow OOM score adjustments
